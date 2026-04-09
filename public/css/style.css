@@ -1,1 +1,193 @@
+/* 补充样式 */
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: var(--bg-gradient-mid);
+    border-radius: 5px;
+    margin: 15px 0;
+    overflow: hidden;
+}
 
+/* 重复任务标识 */
+.repeat-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 5px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--text-primary), #ffb3ba);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.weekly-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-light);
+}
+
+.weekly-stat {
+    text-align: center;
+}
+
+.weekly-stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.weekly-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+.weekly-task-list {
+    margin-bottom: 15px;
+}
+
+.weekly-task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: var(--bg-gradient-mid);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.weekly-task-item.completed {
+    opacity: 0.6;
+}
+
+.weekly-task-item.completed .weekly-task-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.weekly-task-day {
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    background: var(--card-bg);
+    padding: 2px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.weekly-task-text {
+    flex: 1;
+    color: var(--text-dark);
+}
+
+.history-list {
+    list-style: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-gradient-mid);
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.history-text {
+    flex: 1;
+    color: var(--text-dark);
+}
+
+.history-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .weekly-overview {
+        position: relative;
+        top: 0;
+        max-height: none;
+    }
+
+    .day-card {
+        padding: 15px;
+    }
+
+    .add-task {
+        flex-direction: column;
+    }
+
+    .add-task input[type="text"] {
+        width: 100%;
+    }
+
+    .add-task select {
+        width: calc(50% - 4px);
+    }
+
+    .user-bar {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .theme-toggle {
+        bottom: 10px;
+        right: 10px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--bg-gradient-mid);
+    border-radius: 50%;
+    border-top-color: var(--text-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 成功提示 */
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+}

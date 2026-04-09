@@ -251,4 +251,7 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-module.exports = app;
+// Vercel Serverless Function 导出
+module.exports = (req, res) => {
+    return app(req, res);
+};

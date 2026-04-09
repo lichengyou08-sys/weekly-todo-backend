@@ -1,5 +1,4 @@
 const express = require('express');
-const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
@@ -8,28 +7,26 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 内存存储（Vercel 测试用）
+// 内存存储
 const users = {};
 const tasks = {};
 const history = {};
-
 const sessionStore = {};
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    store: {
-        get: (sid, cb) => cb(null, sessionStore[sid]),
-        set: (sid, sess, cb) => { sessionStore[sid] = sess; cb(null); },
-        destroy: (sid, cb) => { delete sessionStore[sid]; cb(null); }
-    },
-    cookie: { secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 }
-}));
+
+// 简化的 session 中间件
+app.use((req, res, next) => {
+    const sessionId = req.headers['x-session-id'] || 'default';
+    if (!sessionStore[sessionId]) {
+        sessionStore[sessionId] = {};
+    }
+    req.session = sessionStore[sessionId];
+    next();
+});
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Session-Id');
     if (req.method === 'OPTIONS') return res.sendStatus(200);
     next();
 });
@@ -68,7 +65,7 @@ app.post('/api/login', async (req, res) => {
 
 // 登出
 app.post('/api/logout', (req, res) => {
-    req.session.destroy();
+    req.session = {};
     res.json({ message: '登出成功' });
 });
 

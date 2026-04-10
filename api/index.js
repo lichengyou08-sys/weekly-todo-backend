@@ -7,27 +7,28 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 内存存储
-const users = {};
-const tasks = {};
-const history = {};
-const sessionStore = {};
-
-// 简化的 session 中间件
-app.use((req, res, next) => {
-    const sessionId = req.headers['x-session-id'] || 'default';
-    if (!sessionStore[sessionId]) {
-        sessionStore[sessionId] = {};
-    }
-    req.session = sessionStore[sessionId];
-    next();
-});
-
+// CORS
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Session-Id');
     if (req.method === 'OPTIONS') return res.sendStatus(200);
+    next();
+});
+
+// 内存存储
+const users = {};
+const tasks = {};
+const history = {};
+
+// 简化的 session 中间件
+app.use((req, res, next) => {
+    const sessionId = req.headers['x-session-id'] || 'default';
+    if (!global.sessionStore) global.sessionStore = {};
+    if (!global.sessionStore[sessionId]) {
+        global.sessionStore[sessionId] = {};
+    }
+    req.session = global.sessionStore[sessionId];
     next();
 });
 
@@ -38,29 +39,37 @@ app.get('/api/test', (req, res) => {
 
 // 注册
 app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ error: '用户名和密码不能为空' });
-    if (password.length < 6) return res.status(400).json({ error: '密码至少需要6位' });
-    if (users[username]) return res.status(400).json({ error: '用户名已存在' });
-    
-    const userId = uuidv4();
-    const hashedPassword = await bcrypt.hash(password, 10);
-    users[username] = { id: userId, username, password: hashedPassword };
-    tasks[userId] = [];
-    history[userId] = [];
-    res.status(201).json({ message: '注册成功', user_id: userId });
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ error: '用户名和密码不能为空' });
+        if (password.length < 6) return res.status(400).json({ error: '密码至少需要6位' });
+        if (users[username]) return res.status(400).json({ error: '用户名已存在' });
+        
+        const userId = uuidv4();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        users[username] = { id: userId, username, password: hashedPassword };
+        tasks[userId] = [];
+        history[userId] = [];
+        res.status(201).json({ message: '注册成功', user_id: userId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // 登录
 app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    const user = users[username];
-    if (!user || !await bcrypt.compare(password, user.password)) {
-        return res.status(401).json({ error: '用户名或密码错误' });
+    try {
+        const { username, password } = req.body;
+        const user = users[username];
+        if (!user || !await bcrypt.compare(password, user.password)) {
+            return res.status(401).json({ error: '用户名或密码错误' });
+        }
+        req.session.userId = user.id;
+        req.session.username = username;
+        res.json({ message: '登录成功', user_id: user.id, username });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    req.session.userId = user.id;
-    req.session.username = username;
-    res.json({ message: '登录成功', user_id: user.id, username });
 });
 
 // 登出
